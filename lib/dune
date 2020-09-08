@@ -1,5 +1,5 @@
 (library
   (name regr)
   (public_name regr)
-  (libraries staTz hashcons)
+  (libraries staTz lib_rewriting)
   (ocamlopt_flags (-warn-error -39)))

@@ -1,0 +1,16 @@
+opam-version: "2.0"
+maintainer: "ilias.garnier@nomadic-labs.com"
+authors: [ "Nomadic Labs" ]
+homepage: "https://gitlab.com/igarnier/regr"
+bug-reports: "https://gitlab.com/igarnier/regr/issues"
+dev-repo: "git+https://gitlab.com/igarnier/regr.git"
+license: "MIT"
+depends: [
+  "ocaml" { >= "4.08" }
+  "dune" { >= "1.7" }
+  "staTz"
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+synopsis: "Library for basic term rewriting"
