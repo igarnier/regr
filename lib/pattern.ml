@@ -46,7 +46,6 @@ type ('f1, 'f2, 'f) join =
   | FF : (focused, focused, focused) join
 
 type (_, _) pattern_desc =
-  | Patt_float : (float -> bool) option -> ('p, unfocused) pattern_desc
   | Patt_prim : 'p prim_pred * ('p, 'f) pattern_list -> ('p, 'f) pattern_desc
   | Patt_any : ('p, unfocused) pattern_desc
   | Patt_focus : ('p, unfocused) pattern -> ('p, focused) pattern_desc
@@ -69,7 +68,6 @@ and 'p prim_pred = Patt_prim_equal of 'p | Patt_pred of ('p -> bool)
 let rec get_focus : type f. ('p, f) pattern -> f focus_tag =
  fun { patt_desc; _ } ->
   match patt_desc with
-  | Patt_float _ -> Unfocused_tag
   | Patt_prim (_prim, subpatts) -> get_focus_list subpatts
   | Patt_any -> Unfocused_tag
   | Patt_focus _ -> Focused_tag
@@ -102,8 +100,6 @@ module type S = sig
   val all_matches : t -> node -> path list
 
   val focus_matches : t -> path list -> path list
-
-  val float : (float -> bool) option -> t
 
   val prim : prim -> plist -> t
 
@@ -170,8 +166,6 @@ struct
     match (patt.patt_desc, node.desc) with
     | (Patt_focus patt, _) -> pattern_matches_aux patt node
     | (Patt_any, _) -> true
-    | (Patt_float None, Float _f) -> true
-    | (Patt_float (Some fpred), Float f) -> fpred f
     | (Patt_prim (hpred, subpatts), Prim (prim, subterms)) -> (
         match hpred with
         | Patt_prim_equal h ->
@@ -179,7 +173,6 @@ struct
             else false
         | Patt_pred pred ->
             if pred prim then list_matches subpatts subterms else false )
-    | _ -> false
 
   and list_matches : type f. (X.t, f) pattern_list -> node list -> bool =
    fun patts nodes ->
@@ -197,7 +190,6 @@ struct
   let rec all_matches_aux : t -> node -> Path.t -> Path.t list -> Path.t list =
    fun patt node position acc ->
     match node.desc with
-    | Float _ -> if pattern_matches patt node then position :: acc else acc
     | Prim (_, subterms) ->
         let (_, acc) =
           List.fold_left
@@ -243,8 +235,6 @@ struct
 
   let ex_patt patt_desc = Ex_patt { patt_desc; patt_uid = uid_gen () }
 
-  let float pred = ex_patt (Patt_float pred)
-
   let prim prim patts =
     match patts with
     | Ex_patt_list patts -> ex_patt (Patt_prim (Patt_prim_equal prim, patts))
@@ -282,7 +272,6 @@ struct
   let rec pp_patt : type f. Format.formatter -> (prim, f) pattern -> unit =
    fun fmtr patt ->
     match patt.patt_desc with
-    | Patt_float _ -> Format.pp_print_string fmtr "float"
     | Patt_prim (Patt_prim_equal prim, subpatts) ->
         Format.fprintf fmtr "[%a](%a)" X.pp prim pp_patt_list subpatts
     | Patt_prim (Patt_pred _, subpatts) ->
@@ -326,7 +315,6 @@ end = struct
     match Hashtbl.find_opt table { patt_uid; node_tag } with
     | None -> (
         match node.desc with
-        | Float _ -> if pattern_matches patt node then position :: acc else acc
         | Prim (_, subterms) ->
             let (_, acc) =
               List.fold_left

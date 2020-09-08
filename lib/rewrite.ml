@@ -84,13 +84,6 @@ module Make
     | [] -> term
     | index :: l -> (
         match term.desc with
-        | Float _ ->
-            let msg =
-              Printf.sprintf
-                "get_subterm_aux: non-empty path (%s)"
-                (string_of_forward_path path)
-            in
-            raise (Rewrite_error (msg, Some term))
         | Prim (_, subterms) -> get_subterm_at subterms index l )
 
   and get_subterm_at : node list -> int -> forward_path -> node =
@@ -99,7 +92,7 @@ module Make
     | ([], _) ->
         let msg =
           Printf.sprintf
-            "get_subterm_at: non-empty path (%s)"
+            "get_subterm_at: inconsistent path (%s)"
             (string_of_forward_path path)
         in
         raise (Rewrite_error (msg, None))
@@ -118,9 +111,6 @@ module Make
     | [] -> replacement
     | index :: l -> (
         match term.desc with
-        | Float _ ->
-            let msg = "subst_aux: non-empty path" in
-            raise (Rewrite_error (msg, Some term))
         | Prim (prim, subterms) ->
             M.prim prim (subst_at subterms index l replacement) )
 

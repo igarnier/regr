@@ -2,7 +2,7 @@ open Custom_weak
 
 type 'prim raw = { desc : 'prim desc; tag : int; hash : int }
 
-and 'prim desc = Prim of 'prim * 'prim raw list | Float of float
+and 'prim desc = Prim of 'prim * 'prim raw list
 
 module type S = sig
   type prim
@@ -10,8 +10,6 @@ module type S = sig
   type t = prim raw
 
   val prim : prim -> t list -> t
-
-  val float : float -> t
 end
 
 module Make (X : Signature.S) : S with type prim = X.t = struct
@@ -35,27 +33,10 @@ module Make (X : Signature.S) : S with type prim = X.t = struct
       incr x ;
       !x
 
-  let alloc_float (hash : int) (f : float) =
-    let res = { tag = new_tag (); hash; desc = Float f } in
-    Table.add table res ;
-    res
-
   let alloc_prim (hash : int) (prim : prim) (subterms : t list) =
     let res = { tag = new_tag (); hash; desc = Prim (prim, subterms) } in
     Table.add table res ;
     res
-
-  let float (f : float) =
-    let hash = Hashtbl.hash f in
-    match Table.find_all_by_hash table hash with
-    | [] -> alloc_float hash f
-    | bucket -> (
-        let exists =
-          List.find_opt
-            (function { desc = Float f'; _ } -> f = f' | _ -> false)
-            bucket
-        in
-        match exists with Some res -> res | None -> alloc_float hash f )
 
   let hash_empty_list = Hashtbl.hash []
 
@@ -82,8 +63,7 @@ module Make (X : Signature.S) : S with type prim = X.t = struct
             (function
               | { desc = Prim (head', subterms'); _ } ->
                   X.compare head head' = 0
-                  && term_lists_equal subterms subterms'
-              | _ -> false)
+                  && term_lists_equal subterms subterms')
             bucket
         in
         match exists with

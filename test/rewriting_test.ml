@@ -20,7 +20,7 @@ let rec pp_native fmtr (term : native) =
 (* -------------------- *)
 
 module Prim = struct
-  type t = Add | Sub | Mul | Div | Var of string
+  type t = Add | Sub | Mul | Div | Var of string | Float of float
 
   let compare (x : t) (y : t) = Stdlib.compare x y
 
@@ -32,6 +32,7 @@ module Prim = struct
     | Mul -> Format.fprintf fmtr "Mul"
     | Div -> Format.fprintf fmtr "Div"
     | Var s -> Format.fprintf fmtr "Var(%s)" s
+    | Float f -> Format.fprintf fmtr "%f" f
 end
 
 (* -------------------- *)
@@ -51,9 +52,9 @@ let mul x y = Term.prim Mul [x; y]
 
 let div x y = Term.prim Div [x; y]
 
-let float f = Term.float f
+let float f = Term.prim (Prim.Float f) []
 
-let var s = Term.prim (Var s) []
+let var s = Term.prim (Prim.Var s) []
 
 (* -------------------- *)
 
@@ -65,7 +66,7 @@ let rec to_native : Term.t -> native =
   | Prim (Prim.Mul, [lhs; rhs]) -> Mul (to_native lhs, to_native rhs)
   | Prim (Prim.Div, [lhs; rhs]) -> Div (to_native lhs, to_native rhs)
   | Prim (Prim.Var v, []) -> Var v
-  | Float f -> Const f
+  | Prim (Float f, []) -> Const f
   | _ -> assert false
 
 (* -------------------- *)
