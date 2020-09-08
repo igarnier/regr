@@ -1,0 +1,10 @@
+(executables
+ (names rewriting_test)
+ (libraries regr)
+ (preprocess (pps ppx_deriving.show))
+ )
+
+(alias
+ (name runtest_rewriting)
+  (deps    (:exe rewriting_test.exe))
+(action (run %{exe})))
