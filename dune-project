@@ -1,2 +1,2 @@
-(lang dune 1.11)
-(name regr)
+(lang dune 2.9)
+(name program_inference)

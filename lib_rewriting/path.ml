@@ -39,6 +39,8 @@ module type S = sig
   val concat : above:t -> under:t -> t
 
   val to_string : t -> string
+
+  val pp : Format.formatter -> t -> unit
 end
 
 module Without_hash_consing : S = struct
@@ -65,10 +67,12 @@ module Without_hash_consing : S = struct
         let c = Int.compare i1 i2 in
         if c = 0 then compare p1 p2 else c
 
-  let rec to_string (x : t) =
-    match x.rev_path_desc with
-    | Root -> "*"
-    | At_index (i, up) -> Printf.sprintf "%d -> %s" i (to_string up)
+  let rec pp fmtr (path : t) =
+    match path.rev_path_desc with
+    | Root -> Format.fprintf fmtr "*"
+    | At_index (i, up) -> Format.fprintf fmtr "%d -> %a" i pp up
+
+  let to_string (path : t) = Format.asprintf "%a" pp path
 end
 
 module With_hash_consing : S = struct
@@ -109,7 +113,7 @@ module With_hash_consing : S = struct
               | _ -> false)
             bucket
         in
-        match exists with Some res -> res | None -> add_new_index hash i path )
+        match exists with Some res -> res | None -> add_new_index hash i path)
 
   let rec concat ~above:path1 ~under:path2 =
     match path2.rev_path_desc with
@@ -118,8 +122,10 @@ module With_hash_consing : S = struct
 
   let compare path1 path2 = Int.compare path1.tag path2.tag
 
-  let rec to_string (x : t) =
-    match x.rev_path_desc with
-    | Root -> "*"
-    | At_index (i, up) -> Printf.sprintf "%d -> %s" i (to_string up)
+  let rec pp fmtr (path : t) =
+    match path.rev_path_desc with
+    | Root -> Format.fprintf fmtr "*"
+    | At_index (i, up) -> Format.fprintf fmtr "%d -> %a" i pp up
+
+  let to_string (path : t) = Format.asprintf "%a" pp path
 end

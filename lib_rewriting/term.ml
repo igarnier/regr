@@ -4,12 +4,18 @@ type 'prim raw = { desc : 'prim desc; tag : int; hash : int }
 
 and 'prim desc = Prim of 'prim * 'prim raw list
 
+let equal term1 term2 = term1.tag = term2.tag
+
+let compare term1 term2 = Int.compare term1.tag term2.tag
+
 module type S = sig
   type prim
 
   type t = prim raw
 
   val prim : prim -> t list -> t
+
+  val pp : Format.formatter -> t -> unit
 end
 
 module Make (X : Signature.S) : S with type prim = X.t = struct
@@ -69,4 +75,17 @@ module Make (X : Signature.S) : S with type prim = X.t = struct
         match exists with
         | Some res -> res
         | None -> alloc_prim hash head subterms )
+
+  let rec pp fmtr (term : t) =
+    let open Format in
+    match term.desc with
+    | Prim (prim, []) -> fprintf fmtr "%a" X.pp prim
+    | Prim (prim, subterms) ->
+        fprintf
+          fmtr
+          "@[<hv 1>%a(%a)@]"
+          X.pp
+          prim
+          (pp_print_list ~pp_sep:(fun fmtr () -> fprintf fmtr ";@ ") pp)
+          subterms
 end

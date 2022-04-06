@@ -1,3 +1,5 @@
+open Lib_rewriting
+
 (* -------------------- *)
 
 type native =
@@ -37,12 +39,10 @@ end
 
 (* -------------------- *)
 
-module Term = Regr.Term.Make (Prim)
+module Term = Term.Make (Prim)
 module Patt =
-  Regr.Pattern.Make_with_hash_consing (Prim) (Term)
-    (Regr.Path.With_hash_consing)
-module Rewrite =
-  Regr.Rewrite.Make (Prim) (Term) (Regr.Path.With_hash_consing) (Patt)
+  Pattern.Make_with_hash_consing (Prim) (Term) (Path.With_hash_consing)
+module Rewrite = Rewrite.Make (Prim) (Term) (Path.With_hash_consing) (Patt)
 
 let add x y = Term.prim Add [x; y]
 
@@ -102,8 +102,7 @@ let matches = Rewrite.all_matches pattern expression
 
 let () =
   List.iter
-    (fun path ->
-      Format.printf "%s@." (Regr.Path.With_hash_consing.to_string path))
+    (fun path -> Format.printf "%s@." (Path.With_hash_consing.to_string path))
     matches
 
 (* Rewrite deeper matches first *)

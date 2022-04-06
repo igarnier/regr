@@ -1,5 +1,5 @@
 (library
   (name regr)
   (public_name regr)
-  (libraries staTz lib_rewriting)
+  (libraries prbnmcn-stats prbnmcn-ucb1 prbnmcn-mcts prbnmcn-dagger prbnmcn-dagger-stats  prbnmcn-dagger-gsl lib_rewriting unix)
   (ocamlopt_flags (-warn-error -39)))

@@ -1,10 +1,5 @@
-(executables
- (names rewriting_test)
- (libraries regr)
+(tests
+ (names rewriting_test sampling_test mcts_test)
+ (libraries lib_rewriting regr prbnmcn-stats)
  (preprocess (pps ppx_deriving.show))
  )
-
-(alias
- (name runtest_rewriting)
-  (deps    (:exe rewriting_test.exe))
-(action (run %{exe})))
